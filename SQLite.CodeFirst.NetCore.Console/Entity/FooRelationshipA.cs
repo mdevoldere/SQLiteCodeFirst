@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace SQLite.CodeFirst.Console.Entity
+namespace SQLite.CodeFirst.NetCore.Console.Entity
 {
     /// <summary>
     /// See https://github.com/msallin/SQLiteCodeFirst/issues/109
     /// </summary>
-    public class FooRelationshipB
+    public class FooRelationshipA
     {
         public int Id { get; set; }
 

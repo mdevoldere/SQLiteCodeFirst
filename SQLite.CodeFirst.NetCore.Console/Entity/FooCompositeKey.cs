@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SQLite.CodeFirst.Console.Entity
+namespace SQLite.CodeFirst.NetCore.Console.Entity
 {
     /// <summary>
     /// See https://github.com/msallin/SQLiteCodeFirst/issues/109

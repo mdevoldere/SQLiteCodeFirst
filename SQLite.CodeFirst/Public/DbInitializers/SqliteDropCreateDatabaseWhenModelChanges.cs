@@ -61,16 +61,16 @@ namespace SQLite.CodeFirst
 
         /// <summary>
         /// Initialize the database for the given context.
-        /// Generates the SQLite-DDL from the model and executs it against the database.
+        /// Generates the SQLite-DDL from the model and executes it against the database.
         /// After that the <see cref="Seed" /> method is executed.
         /// All actions are be executed in transactions.
         /// </summary>
         /// <param name="context">The context.</param>
         public override void InitializeDatabase(TContext context)
         {
-            string databseFilePath = GetDatabasePathFromContext(context);
+            string databaseFilePath = GetDatabasePathFromContext(context);
 
-            bool dbExists = InMemoryAwareFile.Exists(databseFilePath);
+            bool dbExists = InMemoryAwareFile.Exists(databaseFilePath);
             if (dbExists)
             {
                 if (IsSameModel(context))
@@ -78,10 +78,11 @@ namespace SQLite.CodeFirst
                     return;
                 }
 
-                FileAttributes? attributes = InMemoryAwareFile.GetFileAttributes(databseFilePath);
-                DeleteDatabase(context, databseFilePath);
+                FileAttributes? attributes = InMemoryAwareFile.GetFileAttributes(databaseFilePath);
+                CloseDatabase(context);
+                DeleteDatabase(context, databaseFilePath);
                 base.InitializeDatabase(context);
-                InMemoryAwareFile.SetFileAttributes(databseFilePath, attributes);
+                InMemoryAwareFile.SetFileAttributes(databaseFilePath, attributes);
                 SaveHistory(context);
             }
             else
@@ -91,13 +92,22 @@ namespace SQLite.CodeFirst
             }
         }
 
+        /// <summary>
+        /// Called to drop/remove Database file from disk.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="databaseFilePath">Filename of Database to be removed.</param>
+        protected virtual void DeleteDatabase(TContext context, string databaseFilePath)
+        {
+            InMemoryAwareFile.Delete(databaseFilePath);
+        }
+
         [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.GC.Collect", Justification = "Required.")]
-        private static void DeleteDatabase(TContext context, string databseFilePath)
+        private static void CloseDatabase(TContext context)
         {
             context.Database.Connection.Close();
             GC.Collect();
             GC.WaitForPendingFinalizers();
-            InMemoryAwareFile.Delete(databseFilePath);
         }
 
         private void SaveHistory(TContext context)

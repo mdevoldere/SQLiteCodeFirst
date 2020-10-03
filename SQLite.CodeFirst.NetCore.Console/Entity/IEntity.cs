@@ -1,4 +1,4 @@
-﻿namespace SQLite.CodeFirst.Console.Entity
+﻿namespace SQLite.CodeFirst.NetCore.Console.Entity
 {
     public interface IEntity
     {
