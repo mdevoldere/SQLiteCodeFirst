@@ -12,6 +12,14 @@ To support this project you can: *star the repository*, report bugs/request feat
 Especially if you use it for a commercial project, a donation is welcome.
 If you need a specific feature for a commercial project, I am glad to offer a paid implementation.
 
+## Project Status
+
+This project was started when there was .NET Full Framework and EF 6. EF 6 does not offer code first for SQLite and this library fills this gab.
+Nowadays there is .NET Core (or now just called .NET) and EF Core. EF Core supports code first and migrations for SQLite.
+If you use .NET Core 3 or above together with EF Core, there is no need for this library.
+If you use EF 6 (either with .NET Full Framework or with .NET Core 3 or above), this library is an option for you to get code first for SQLite.
+I'm going to maintain this library as long as it is useful for some people (see [History](https://github.com/msallin/SQLiteCodeFirst/issues/166) & [Project Status and Release Schedule](https://github.com/msallin/SQLiteCodeFirst/issues/157)).
+
 ## Features
 
 This project ships several `IDbInitializer` classes. These create new SQLite Databases based on your model/code.
@@ -27,6 +35,7 @@ The following features are supported:
 - Index (Decorate columns with the `Index` attribute. Indices are automatically created for foreign keys by default. To prevent this you can remove the convention `ForeignKeyIndexConvention`)
 - Unique constraint (Decorate columns with the `UniqueAttribute`, which is part of this library)
 - Collate constraint (Decorate columns with the `CollateAttribute`, which is part of this library. Use `CollationFunction.Custom` to specify a own collation function.)
+- Default collation (pass an instance of Collation as constructor parameter for an initializer to specify a default collation).
 - SQL default value (Decorate columns with the `SqlDefaultValueAttribute`, which is part of this library)
 
 ## Install
@@ -39,6 +48,7 @@ You can use the SQLite CodeFirst in projects that target the following framework
 - .NET 4.0 (uses net40)
 - .NET 4.5-4.8 (uses net45)
 - .NET Core 3.0-3.1 (uses netstandard2.1)
+- .NET 5-8 (uses netstandard2.1)
 
 ## How to use
 
@@ -129,24 +139,34 @@ Add the following package references.
 
 Add the following class.
 ```csharp
-public Configuration()
-{
-    SetProviderFactory("System.Data.SQLite", SQLiteFactory.Instance);
-    SetProviderFactory("System.Data.SQLite.EF6", SQLiteProviderFactory.Instance);
+public class MyConfiguration : DbConfiguration, IDbConnectionFactory {
+    public MyConfiguration()
+    {
+        SetProviderFactory("System.Data.SQLite", SQLiteFactory.Instance);
+        SetProviderFactory("System.Data.SQLite.EF6", SQLiteProviderFactory.Instance);
 
-    var providerServices = (DbProviderServices)SQLiteProviderFactory.Instance.GetService(typeof(DbProviderServices));
+        var providerServices = (DbProviderServices)SQLiteProviderFactory.Instance.GetService(typeof(DbProviderServices));
 
-    SetProviderServices("System.Data.SQLite", providerServices);
-    SetProviderServices("System.Data.SQLite.EF6", providerServices);
+        SetProviderServices("System.Data.SQLite", providerServices);
+        SetProviderServices("System.Data.SQLite.EF6", providerServices);
 
-    SetDefaultConnectionFactory(this);
-}
+        SetDefaultConnectionFactory(this);
+    }
 
-public DbConnection CreateConnection(string connectionString)
-    => new SQLiteConnection(connectionString);
+    public DbConnection CreateConnection(string connectionString)
+        => new SQLiteConnection(connectionString);
+    }
 }
 ```
 
+Also, make sure you specify the DbConfigurationType on the DBContext class as well
+
+```csharp
+[DbConfigurationType(typeof(MyConfiguration))]
+public class Context: DbContext {
+    //... DBContext things
+}
+```
 ## Structure
 
 The code is written in an extensible way.
